@@ -22,6 +22,8 @@ public:
 	void deallocate(real *var, int m);
 	void deallocate(real **var, int m, int n);
 
+	void save(char *filename);
+
 private:
 
 	real **xi;
@@ -36,6 +38,8 @@ private:
 
 	real M_inf;
 	real P_inf;
+
+	real gamma, alpha;
 
 	real NRtol; // Tolerance for newton raphson iteration
 

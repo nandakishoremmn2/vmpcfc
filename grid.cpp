@@ -11,6 +11,9 @@ Grid::Grid(int m, int n, int nrtol)
 
 	NRtol = nrtol;
 
+	gamma = 1.4;
+	alpha = gamma / ( gamma - 1 );
+
 	xi = allocate(nr, nt);
 	temp = allocate(nr, nt);
 
@@ -65,4 +68,63 @@ void Grid::deallocate(real **var, int m, int n)
 		delete [] var[i];
 	}
 	delete [] var;
+}
+
+void Grid::save(char *filename)
+{
+	std::ofstream outfile(filename);
+	for (int i = 0; i < nr; ++i)
+	{
+		for (int j = 0; j < nt; ++j)
+		{
+			outfile<<xi[i][j]<<" ";
+		}
+		outfile<<"\n";
+	}
+}
+
+void Grid::sweep(int n)
+{
+	for (int num = 0; num < n; ++num)
+	{
+		for (int i = 0; i < nr; ++i)
+		{
+			for (int j = 0; j < nt; ++j)
+			{
+				temp[i][j] = xi[i][j];
+				minimize(i, j);
+			}
+		}
+	}
+}
+
+void Grid::minimize(int i, int j)
+{
+	real delta;
+	int MAX_NR_ITER = 100;
+	int iter = 0;
+	do
+	{
+		delta = get_delta(i, j);
+		xi[i][j] = xi[i][j] - delta;
+
+		iter++;
+
+	} while (delta > NRtol && iter < MAX_NR_ITER);
+}
+
+real Grid::get_delta(int i, int j)
+{
+	real g = 0., g_ = 0.; 	// g = dJ/dXij
+	real t1, t2;	// Temp variables
+	for (int k = 0; k < 4; ++k)
+	{
+		t1 = ( A[k] * xi[i][j] + B[k] ) * xi[i][j] + C[k];
+		t2 = 2. * A[k] * xi[i][j] + B[k];
+
+		g += ( alpha * pow(t1, alpha-1) * t2 + D[k] ) * H[k];
+		g_ += ( 2 * A[k] * alpha * pow(t1, alpha - 1) + \
+			alpha * (alpha-1) * pow(t1, alpha-2) * t2 ) * H[k];
+	}
+	return g/g_;
 }
