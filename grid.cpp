@@ -16,10 +16,10 @@ Grid::Grid(int m, int n, real R_max, real nrtol)
 	gamma = 1.4;
 	alpha = gamma / ( gamma - 1 );
 
-	tau = .1;
+	tau = 1;
 	lambda2 = ( 1 - tau ) / ( 1 + tau );
 
-	M_inf2 = .2*.2;
+	M_inf2 = pow(.39, 2);
 
 	xi = allocate(nt, nr);
 	temp = allocate(nt, nr);
@@ -99,6 +99,24 @@ void Grid::save(char *filename)
 		}
 		outfile<<"\n";
 	}
+	outfile.close();
+
+
+	std::ofstream coordsfile("coords.dat");
+	for (int i = 0; i < nt; ++i)
+	{
+		coordsfile<<t[i]<<" ";
+	}
+	coordsfile<<"\n";
+	for (int j = 0; j < nr; ++j)
+	{
+		coordsfile<<r[j]<<" ";
+	}
+	coordsfile<<"\n";
+	coordsfile<<lambda2;
+	coordsfile<<"\n";
+	coordsfile<<M_inf2;
+	coordsfile.close();
 }
 
 void Grid::load(char *filename)
@@ -115,18 +133,21 @@ void Grid::load(char *filename)
 
 void Grid::sweep(int n)
 {
+	real res;
 	for (int num = 0; num < n; ++num)
 	{
-		apply_boundary_conditions();
 		for (int i = 1; i < nt-1; ++i)
 		{
+			apply_boundary_conditions();
 			for (int j = 1; j < nr-1; ++j)
 			{
 				temp[i][j] = xi[i][j];
 				minimize(i, j);
 			}
 		}
-		printf("%d. Residue = %g\n", num, get_residue());
+		res = get_residue();
+		printf("%d. Residue = %g\n", num, res);
+		if( res < 1e-30 && num > 10)break;
 	}
 }
 
@@ -147,8 +168,9 @@ void Grid::minimize(int i, int j)
 
 		if(xi[i][j]!=xi[i][j]) // Check for NaN
 		{
+			printf(".");
 			// printf("Reset at (%d, %d)\n", i, j);
-			xi[i][j] = -5.;
+			xi[i][j] = -5;
 			// xi[i-1][j-1] = xi[i-1][j] = xi[i-1][j+1] = xi[i][j+1] = \
 			// xi[i+1][j+1] = xi[i+1][j] = xi[i+1][j-1] = xi[i][j-1] = -10;
 			break;
@@ -337,7 +359,7 @@ void Grid::apply_boundary_conditions()
 	}
 	for (int i = 0; i < nt; ++i)
 	{
-		xi[i][nr-1] = 0;
+		xi[i][nr-1] = 1/r[nr-1]*cos(t[i]);
 		xi[i][0] = ( ( pow(k[0] + k[1], 2) * xi[i][1] - k[0]*k[0]*xi[i][2] ) / k[1] \
 			+ k[0] * ( k[0] + k[1] ) * cos(t[i]) 
 			) / ( k[1] + 2*k[0] );
@@ -351,8 +373,8 @@ real Grid::get_residue()
 	{
 		for (int j = 1; j < nr-1; ++j)
 		{
-			tmp += abs(xi[i][j]-temp[i][j]);
+			tmp += abs(xi[i][j]-temp[i][j]) / r[j];
 		}
 	}
-	return tmp/nr/nt;
+	return tmp;
 }

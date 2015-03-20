@@ -2,16 +2,31 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <csignal>
+
+Grid *grid_ptr;
+
+int *get_input(int argc, char *argv[]);
+void signalHandler( int signum );
 
 int main (int argc, char *argv[]) 
 {
-	Grid grid(90, 410, 20, 1e-100);
+	Grid grid(200, 410, 200, 1e-100);
+	grid_ptr = &grid;
 
-	grid.load("xi.dat");
+	signal(SIGINT, signalHandler);
+
+	// grid.load("xi.dat");
 
 	grid.sweep(5000);
 
 	grid.save("xi.dat");
 
 	return 0;
+}
+
+void signalHandler( int signum )
+{
+	grid_ptr->save("xi.dat");
+	exit(0);  
 }
