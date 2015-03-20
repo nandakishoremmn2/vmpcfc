@@ -21,6 +21,7 @@ public:
 	void apply_boundary_conditions();
 
 	void init_r_and_t();
+	void init_xi();
 
 	real *allocate(int m);
 	real **allocate(int m, int n);

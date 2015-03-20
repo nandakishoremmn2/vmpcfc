@@ -33,6 +33,7 @@ Grid::Grid(int m, int n, real R_max, real nrtol)
 	h = allocate(nt-1);
 
 	init_r_and_t();
+	init_xi();
 
 }
 
@@ -164,13 +165,19 @@ void Grid::minimize(int i, int j)
 	{
 		delta = get_delta(i, j);
 		// printf("%g ", delta);
+		if(delta!=delta)
+		{
+			printf("#");
+			break;
+		}
+		
 		xi[i][j] = xi[i][j] - delta;
 
 		if(xi[i][j]!=xi[i][j]) // Check for NaN
 		{
-			printf(".");
+			printf("*");
 			// printf("Reset at (%d, %d)\n", i, j);
-			xi[i][j] = -5;
+			xi[i][j] = cos(t[i])/r[j];
 			// xi[i-1][j-1] = xi[i-1][j] = xi[i-1][j+1] = xi[i][j+1] = \
 			// xi[i+1][j+1] = xi[i+1][j] = xi[i+1][j-1] = xi[i][j-1] = -10;
 			break;
@@ -377,4 +384,15 @@ real Grid::get_residue()
 		}
 	}
 	return tmp;
+}
+
+void Grid::init_xi()
+{
+	for (int i = 0; i < nt; ++i)
+	{
+		for (int j = 0; j < nr; ++j)
+		{
+			xi[i][j] = cos(t[i])/r[j];
+		}
+	}
 }
