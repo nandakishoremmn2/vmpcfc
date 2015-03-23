@@ -36,6 +36,7 @@ private:
 
 	real **xi;
 	real **temp;
+	real **err; 	// No. of resets happened here
 
 	real *r, *r1, *k;					// R
 	int nr;  							// Size of r

@@ -11,7 +11,7 @@ void signalHandler( int signum );
 
 int main (int argc, char *argv[]) 
 {
-	Grid grid(410, 90, 30, 1e-100);
+	Grid grid(43, 21, 30, 1e-5);
 	grid_ptr = &grid;
 
 	signal(SIGINT, signalHandler);

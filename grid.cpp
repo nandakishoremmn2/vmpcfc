@@ -19,10 +19,11 @@ Grid::Grid(int m, int n, real R_max, real nrtol)
 	tau = 1;
 	lambda2 = ( 1 - tau ) / ( 1 + tau );
 
-	M_inf2 = pow(.39, 2);
+	M_inf2 = pow(.40, 2);
 
 	xi = allocate(nt, nr);
 	temp = allocate(nt, nr);
+	err = allocate(nt, nr);
 
 	r = allocate(nr);
 	r1 = allocate(nr-1);
@@ -102,6 +103,16 @@ void Grid::save(char *filename)
 	}
 	outfile.close();
 
+	std::ofstream outfile2("err.dat");
+	for (int i = 0; i < nt; ++i)
+	{
+		for (int j = 0; j < nr; ++j)
+		{
+			outfile2<<int(err[i][j])<<" ";
+		}
+		outfile2<<"\n";
+	}
+	outfile.close();
 
 	std::ofstream coordsfile("coords.dat");
 	for (int i = 0; i < nt; ++i)
@@ -137,47 +148,62 @@ void Grid::sweep(int n)
 	real res;
 	for (int num = 0; num < n; ++num)
 	{
+		apply_boundary_conditions();
 		for (int i = 1; i < nt-1; ++i)
+		// for (int i = 1; i < (nt-1)/2; ++i)
 		{
-			apply_boundary_conditions();
-			for (int j = 1; j < nr-1; ++j)
+			for (int j = nr-1; j > 0; --j)
 			{
 				temp[i][j] = xi[i][j];
 				minimize(i, j);
+				// temp[nt-1-i][j] = xi[nt-1-i][j];
+				// minimize(nt-1-i, j);
 			}
 		}
 		res = get_residue();
 		printf("%d. Residue = %g\n", num, res);
-		if( res < 1e-30 && num > 10)break;
+		if( res < 1e-5 && num > 5)break;
 	}
 }
 
 void Grid::minimize(int i, int j)
 {
 	real delta;
-	int MAX_NR_ITER = 10000;
+	int MAX_NR_ITER = 10;
 	int iter = 0;
 
 	// This need to be done only once prior to NR iterations
 	calc_coefficients(i, j);
-
+	real del = 0;
 	do
 	{
 		delta = get_delta(i, j);
-		// printf("%g ", delta);
+		// if(j==1) printf("%g ", delta);
 		if(delta!=delta)
 		{
 			printf("#");
+			err[i][j]++;
 			break;
 		}
 		
+		if (xi[i][j] == xi[i][j] - delta)
+		{
+			// printf("screwed\n");
+		}
+		else
+		{
+			// printf("%g ", delta);
+			// printf("unscrewed\n");
+		}
 		xi[i][j] = xi[i][j] - delta;
+		del += delta;
 
 		if(xi[i][j]!=xi[i][j]) // Check for NaN
 		{
 			printf("*");
 			// printf("Reset at (%d, %d)\n", i, j);
-			xi[i][j] = cos(t[i])/r[j];
+			xi[i][j] = -5;
+			// xi[i][j] = cos(t[i])/r[j];
 			// xi[i-1][j-1] = xi[i-1][j] = xi[i-1][j+1] = xi[i][j+1] = \
 			// xi[i+1][j+1] = xi[i+1][j] = xi[i+1][j-1] = xi[i][j-1] = -10;
 			break;
@@ -185,8 +211,10 @@ void Grid::minimize(int i, int j)
 
 		iter++;
 
-	} while (abs(delta) > NRtol && iter < MAX_NR_ITER);
-	if(iter==MAX_NR_ITER)printf(".");
+	} while (abs(delta) > NRtol || iter < MAX_NR_ITER);
+	// printf(",%g, %g \n", del, abs(temp[i][j]-xi[i][j]) );
+	// if(iter==MAX_NR_ITER)printf(".\n");
+	// printf("iterations = %d\n", iter);
 	// printf("%f %d %d", xi[i][j], i, j);
 	// printf("\n");
 }
@@ -195,21 +223,33 @@ real Grid::get_delta(int i, int j)
 {
 	real g = 0., g_ = 0.; 	// g = dJ/dXij
 	real t1, t2;	// Temp variables
+	real s=0.;
+
+	// if(j<10)printf("j = %d. ", j);
 	for (int k = 0; k < 4; ++k)
 	{
-		t1 = ( -A[k] * xi[i][j] + B[k] ) * xi[i][j] + C[k];
+		t1 = ( A[k] * xi[i][j] + B[k] ) * xi[i][j] + C[k];
 		// t1 being negaative is an issue
 		// t1 = t1 > 0 ? t1 : -t1;
 		t2 = 2. * A[k] * xi[i][j] + B[k];
-		// printf("%g ", B[k]);
+		// printf(" | %d .. %g, %g, %g ", k, t2*(2*A[k]*xi[i][j]+B[k]), D[k], H[k]*(t2*(2*A[k]*xi[i][j]+B[k]) + D[k]));
+		// printf(" | %d .. %g ", k, D[k]);
+		// if(j<10)printf(" | %d .. %g, %g", k, alpha*pow(t1, alpha-1), t2);
+		// if(j<10)printf(" \n %d .. %g, %g, %g, %g, %g", k, alpha*pow(t1, alpha-1)*t2, D[k], H[k], alpha*pow(t1, alpha-1)*t2 + D[k], H[k]*(alpha*pow(t1, alpha-1)*t2 + D[k]) );
+		s += H[k]*(alpha*pow(t1, alpha-1)*t2 + D[k]);
+		// printf(" | %d .. %g ", k, 2*A[k]*xi[i][j]+B[k]);
+		// printf(" | %d .. %g ", k, H[k]*(alpha * pow(t1, alpha-1)*t2+D[k]));
+		// s+=( alpha * pow(t1, alpha-1) * t2 + D[k] ) * H[k];
 
+		// g += H[k] * ( alpha * pow(t1, alpha-1) + D[k] );
 		g += ( alpha * pow(t1, alpha-1) * t2 + D[k] ) * H[k];
+		// printf(" | %d .. %g ", k, g);
 		g_ += ( 2 * A[k] * alpha * pow(t1, alpha - 1) + alpha * (alpha-1) * pow(t1, alpha-2) * t2 ) * H[k];
 	// 	printf("for -- %g ", ( alpha * pow(t1, alpha-1) * t2 + D[k] ) * H[k] );
 	// printf("i=%d, j=%d, k=%d, A=%g, B=%g, C=%g, D=%g, H=%g, g=%g, g_=%g, g/g_=%g ---- ", i, j, k, A[k], B[k], C[k], D[k], H[k], g, g_, g/g_ );
 	}
-	// printf("\n");
-	// printf("g/g_ = %g  ..--..", g_);
+	// if(j<10)printf(" ---> g/g_ = %g  ..--..", s);
+	// if(j<10)printf("\n");
 	return g/g_;
 }
 
@@ -236,10 +276,10 @@ void Grid::calc_coefficients(int i, int j)
 		+ x1 / (2*kk*kk) + x2 / (2*hh*hh*rr*rr) 
 		);
 	C[0] = 1 + .5 * (gamma-1) * M_inf2 / T * ( T - 1 
-		+ cos(tt) * x1 / kk - sin(tt) * x2 / ( rr * hh ) 
+		- cos(tt) * x1 / kk + sin(tt) * x2 / ( rr * hh ) 
 		- x1*x1 / ( 4*kk*kk ) - x2*x2 / ( 4*rr*rr*hh*hh ) 
 		);
-	D[0] = -1 + gamma * M_inf2 / T * ( \
+	D[0] = gamma * M_inf2 / T * ( \
 		- .5 * ( rr*rr - 1 ) / ( rr*rr ) * cos(tt) / kk
 		+ .5 * ( rr*rr - 1 ) / ( rr*rr*rr ) * sin(tt) / hh
 		);
@@ -259,10 +299,10 @@ void Grid::calc_coefficients(int i, int j)
 		+ x1 / (2*kk*kk) - x2 / (2*hh*hh*rr*rr) 
 		);
 	C[1] = 1 + .5 * (gamma-1) * M_inf2 / T * ( T - 1 
-		+ cos(tt) * x1 / kk + sin(tt) * x2 / ( rr * hh ) 
+		- cos(tt) * x1 / kk + sin(tt) * x2 / ( rr * hh ) 
 		- x1*x1 / ( 4*kk*kk ) - x2*x2 / ( 4*rr*rr*hh*hh ) 
 		);
-	D[1] = -1 + gamma * M_inf2 / T * ( 
+	D[1] = gamma * M_inf2 / T * ( 
 		- .5 * ( rr*rr - 1 ) / ( rr*rr ) * cos(tt) / kk
 		- .5 * ( rr*rr - 1 ) / ( rr*rr*rr ) * sin(tt) / hh
 		);
@@ -281,10 +321,10 @@ void Grid::calc_coefficients(int i, int j)
 		- x1 / (2*kk*kk) + x2 / (2*hh*hh*rr*rr) 
 		);
 	C[2] = 1 + .5 * (gamma-1) * M_inf2 / T * ( T - 1 
-		- cos(tt) * x1 / kk - sin(tt) * x2 / ( rr * hh ) 
+		- cos(tt) * x1 / kk + sin(tt) * x2 / ( rr * hh ) 
 		- x1*x1 / ( 4*kk*kk ) - x2*x2 / ( 4*rr*rr*hh*hh ) 
 		);
-	D[2] = -1 + gamma * M_inf2 / T * ( 
+	D[2] = gamma * M_inf2 / T * ( 
 		+ .5 * ( rr*rr - 1 ) / ( rr*rr ) * cos(tt) / kk
 		+ .5 * ( rr*rr - 1 ) / ( rr*rr*rr ) * sin(tt) / hh
 		);
@@ -306,7 +346,7 @@ void Grid::calc_coefficients(int i, int j)
 		- cos(tt) * x1 / kk + sin(tt) * x2 / ( rr * hh ) 
 		- x1*x1 / ( 4*kk*kk ) - x2*x2 / ( 4*rr*rr*hh*hh ) 
 		);
-	D[3] = -1 + gamma * M_inf2 / T * ( 
+	D[3] = gamma * M_inf2 / T * ( 
 		+ .5 * ( rr*rr - 1 ) / ( rr*rr ) * cos(tt) / kk
 		- .5 * ( rr*rr - 1 ) / ( rr*rr*rr ) * sin(tt) / hh
 		);
@@ -332,7 +372,7 @@ void Grid::init_r_and_t()
 	}
 
 	// Init theta
-	real t_min = 0., t_max = M_PI;
+	real t_min = M_PI*-1, t_max = M_PI;
 	real dt = ( t_max - t_min ) / ( nt - 3 );
 
 	for (int i = 1; i < nt-1; ++i)
@@ -373,14 +413,23 @@ void Grid::apply_boundary_conditions()
 	}
 }
 
+real abs(real num)
+{
+	return num > 0 ? num : 0;
+}
+
 real Grid::get_residue()
 {
 	real tmp = 0;
 	for (int i = 1; i < nt-1; ++i)
 	{
-		for (int j = 1; j < nr-1; ++j)
+		for (int j = 1; j < nr; ++j)
 		{
-			tmp += abs(xi[i][j]-temp[i][j]) / r[j];
+			// tmp += abs(xi[i][j]-temp[i][j]) / r[j];
+			if(abs(xi[i][j]-temp[i][j]) > tmp)
+			{
+				tmp = abs(xi[i][j]-temp[i][j]);
+			}
 		}
 	}
 	return tmp;
