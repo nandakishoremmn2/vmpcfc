@@ -1,7 +1,7 @@
 CFLAGS = -O3 -Wno-write-strings
 OPENMPFLAGS = -fopenmp
 CC = g++
-SRC = main.cpp grid.cpp
+SRC = main.cpp grid.cpp multigrid.cpp
 OBJ = $(SRC:.cpp = .o)
 
 all: $(OBJ)
