@@ -164,7 +164,7 @@ void Grid::sweep(int n)
 			}
 		}
 		res = get_residue();
-		printf("%d. Residue = %g\n", num, res);
+		// printf("%d. Residue = %g\n", num, res);
 		if( res < tol && num > 5)break;
 	}
 }
@@ -177,40 +177,31 @@ void Grid::minimize(int i, int j)
 
 	// This need to be done only once prior to NR iterations
 	calc_coefficients(i, j);
-	real del = 0;
+	// real del = 0;
 	do
 	{
 		delta = get_delta(i, j);
 		// if(j==1) printf("%g ", delta);
 		if(delta!=delta)
 		{
-			printf("#");
+			// printf("#");
 			err[i][j]++;
 			break;
 		}
 		
-		if (xi[i][j] == xi[i][j] - delta)
-		{
-			// printf("screwed\n");
-		}
-		else
-		{
-			// printf("%g ", delta);
-			// printf("unscrewed\n");
-		}
 		xi[i][j] = xi[i][j] - delta;
-		del += delta;
+		// del += delta;
 
-		if(xi[i][j]!=xi[i][j]) // Check for NaN
-		{
-			printf("*");
-			// printf("Reset at (%d, %d)\n", i, j);
-			xi[i][j] = -5;
-			// xi[i][j] = cos(t[i])/r[j];
-			// xi[i-1][j-1] = xi[i-1][j] = xi[i-1][j+1] = xi[i][j+1] = \
-			// xi[i+1][j+1] = xi[i+1][j] = xi[i+1][j-1] = xi[i][j-1] = -10;
-			break;
-		}
+		// if(xi[i][j]!=xi[i][j]) // Check for NaN
+		// {
+		// 	// printf("*");
+		// 	// printf("Reset at (%d, %d)\n", i, j);
+		// 	xi[i][j] = -5;
+		// 	// xi[i][j] = cos(t[i])/r[j];
+		// 	// xi[i-1][j-1] = xi[i-1][j] = xi[i-1][j+1] = xi[i][j+1] = \
+		// 	// xi[i+1][j+1] = xi[i+1][j] = xi[i+1][j-1] = xi[i][j-1] = -10;
+		// 	break;
+		// }
 
 		iter++;
 
