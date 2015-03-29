@@ -6,7 +6,7 @@
 class Multigrid : public Grid
 {
 public:
-	Multigrid(int r_density, int t_density, int r_density_min, int t_density_min, real R_max, real nrtol);
+	Multigrid(real M, real gamma, real tau, int r_density, int t_density, int r_density_min, int t_density_min, real R_max, real nrtol, real tol);
 	~Multigrid();
 
 	void interpolate();

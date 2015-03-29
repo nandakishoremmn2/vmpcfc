@@ -4,7 +4,7 @@
 
 #include "grid.h"
 
-Grid::Grid(int m, int n, real R_max, real nrtol)
+Grid::Grid(real M, real Gamma, real Tau, int m, int n, real R_max, real nrtol, real Tol)
 {
 	nr = m;
 	nt = n;
@@ -12,14 +12,16 @@ Grid::Grid(int m, int n, real R_max, real nrtol)
 	r_max = R_max;
 
 	NRtol = nrtol;
+	tol = Tol;
 
-	gamma = 1.4;
+	gamma = Gamma;
 	alpha = gamma / ( gamma - 1 );
 
-	tau = 1;
+	tau = Tau;
 	lambda2 = ( 1 - tau ) / ( 1 + tau );
 
-	M_inf2 = pow(.2, 2);
+	M_inf = M;
+	M_inf2 = pow(M, 2);
 
 	xi = allocate(nt, nr);
 	temp = allocate(nt, nr);
@@ -163,7 +165,7 @@ void Grid::sweep(int n)
 		}
 		res = get_residue();
 		printf("%d. Residue = %g\n", num, res);
-		if( res < 1e-5 && num > 5)break;
+		if( res < tol && num > 5)break;
 	}
 }
 

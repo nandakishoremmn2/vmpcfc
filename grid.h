@@ -7,7 +7,7 @@ class Grid
 {
 public:
 
-	Grid(int m, int n, real R_max, real nrtol); 
+	Grid(real M, real gamma, real tau, int m, int n, real R_max, real nrtol, real tol); 
 	~Grid();
 
 	real get_residue();
@@ -56,6 +56,7 @@ protected:
 	real gamma, alpha;
 	real lambda2, tau;
 
+	real tol; // Tolerance for solution
 	real NRtol; // Tolerance for newton raphson iteration
 
 };

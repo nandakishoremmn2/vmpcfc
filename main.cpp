@@ -11,7 +11,7 @@ void signalHandler( int signum );
 
 int main(int argc, char const *argv[])
 {
-	Multigrid grid(6, 4, 5, 3, 30, 1e-5);
+	Multigrid grid(.2, 1.4, 1, 6, 4, 5, 3, 30, 1e-5, 1e-4);
 	grid_ptr = &grid;
 
 	signal(SIGINT, signalHandler);
@@ -28,7 +28,7 @@ int main(int argc, char const *argv[])
 
 int main2 (int argc, char *argv[]) 
 {
-	Grid grid(41, 17, 30, 1e-5);
+	Grid grid(.2, 1.4, 1, 41, 17, 30, 1e-5, 1e-4);
 	grid_ptr = &grid;
 
 	signal(SIGINT, signalHandler);

@@ -7,8 +7,8 @@ real min(real a, real b)
 	return a < b ? a : b;
 }
 
-Multigrid::Multigrid(int r_density, int t_density, int r_density_min, int t_density_min, real R_max, real nrtol)
-	:Grid(pow(2, r_density) + 1, pow(2, t_density) + 1, R_max, nrtol)
+Multigrid::Multigrid(real M, real Gamma, real Tau, int r_density, int t_density, int r_density_min, int t_density_min, real R_max, real nrtol, real Tol)
+	:Grid(M, Gamma, Tau, pow(2, r_density) + 1, pow(2, t_density) + 1, R_max, nrtol, Tol)
 {
 
 	level = min(r_density - r_density_min, t_density - t_density_min);
@@ -19,7 +19,7 @@ Multigrid::Multigrid(int r_density, int t_density, int r_density_min, int t_dens
 	}
 	else
 	{
-		grid2 = new Multigrid(r_density-1, t_density-1, r_density_min, t_density_min, R_max, nrtol);
+		grid2 = new Multigrid(M, Gamma, Tau, r_density-1, t_density-1, r_density_min, t_density_min, R_max, nrtol, Tol);
 	}
 }
 
