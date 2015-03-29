@@ -19,7 +19,7 @@ Grid::Grid(int m, int n, real R_max, real nrtol)
 	tau = 1;
 	lambda2 = ( 1 - tau ) / ( 1 + tau );
 
-	M_inf2 = pow(.40, 2);
+	M_inf2 = pow(.2, 2);
 
 	xi = allocate(nt, nr);
 	temp = allocate(nt, nr);
@@ -236,7 +236,7 @@ real Grid::get_delta(int i, int j)
 		// printf(" | %d .. %g ", k, D[k]);
 		// if(j<10)printf(" | %d .. %g, %g", k, alpha*pow(t1, alpha-1), t2);
 		// if(j<10)printf(" \n %d .. %g, %g, %g, %g, %g", k, alpha*pow(t1, alpha-1)*t2, D[k], H[k], alpha*pow(t1, alpha-1)*t2 + D[k], H[k]*(alpha*pow(t1, alpha-1)*t2 + D[k]) );
-		s += H[k]*(alpha*pow(t1, alpha-1)*t2 + D[k]);
+		// s += H[k]*(alpha*pow(t1, alpha-1)*t2 + D[k]);
 		// printf(" | %d .. %g ", k, 2*A[k]*xi[i][j]+B[k]);
 		// printf(" | %d .. %g ", k, H[k]*(alpha * pow(t1, alpha-1)*t2+D[k]));
 		// s+=( alpha * pow(t1, alpha-1) * t2 + D[k] ) * H[k];
@@ -372,7 +372,7 @@ void Grid::init_r_and_t()
 	}
 
 	// Init theta
-	real t_min = M_PI*-1, t_max = M_PI;
+	real t_min = M_PI*0, t_max = M_PI;
 	real dt = ( t_max - t_min ) / ( nt - 3 );
 
 	for (int i = 1; i < nt-1; ++i)

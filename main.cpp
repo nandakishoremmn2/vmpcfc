@@ -11,7 +11,7 @@ void signalHandler( int signum );
 
 int main (int argc, char *argv[]) 
 {
-	Grid grid(43, 21, 30, 1e-5);
+	Grid grid(41, 17, 30, 1e-5);
 	grid_ptr = &grid;
 
 	signal(SIGINT, signalHandler);
@@ -19,6 +19,7 @@ int main (int argc, char *argv[])
 	// grid.load("xi.dat");
 
 	grid.sweep(5000);
+	// grid.sweep(1);
 
 	grid.save("xi.dat");
 
