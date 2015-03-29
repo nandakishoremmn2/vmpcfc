@@ -32,6 +32,9 @@ public:
 	void save(char *filename);
 	void load(char *filename);
 
+	int get_nr();
+	int get_nt();
+
 private:
 
 	real **xi;

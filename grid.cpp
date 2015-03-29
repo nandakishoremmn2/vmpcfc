@@ -445,3 +445,13 @@ void Grid::init_xi()
 		}
 	}
 }
+
+void Grid::get_nr()
+{
+	return nr;
+}
+
+void Grid::get_nt()
+{
+	return nt;
+}
