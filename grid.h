@@ -35,7 +35,7 @@ public:
 	int get_nr();
 	int get_nt();
 
-private:
+protected:
 
 	real **xi;
 	real **temp;
