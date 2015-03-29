@@ -1,4 +1,4 @@
-#include "grid.h"
+#include "multigrid.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -9,7 +9,24 @@ Grid *grid_ptr;
 int *get_input(int argc, char *argv[]);
 void signalHandler( int signum );
 
-int main (int argc, char *argv[]) 
+int main(int argc, char const *argv[])
+{
+	Multigrid grid(6, 4, 5, 3, 30, 1e-5);
+	grid_ptr = &grid;
+
+	signal(SIGINT, signalHandler);
+
+	grid.grid2->sweep(5000);
+	// grid.grid2->save("xi.dat");
+	grid.interpolate();
+	grid.sweep(5000);
+
+	grid.save("xi.dat");
+
+	return 0;
+}
+
+int main2 (int argc, char *argv[]) 
 {
 	Grid grid(41, 17, 30, 1e-5);
 	grid_ptr = &grid;

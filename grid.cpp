@@ -152,7 +152,8 @@ void Grid::sweep(int n)
 		for (int i = 1; i < nt-1; ++i)
 		// for (int i = 1; i < (nt-1)/2; ++i)
 		{
-			for (int j = nr-1; j > 0; --j)
+			for (int j = 1; j < nr-1; ++j)
+			// for (int j = nr-1; j > 0; --j)
 			{
 				temp[i][j] = xi[i][j];
 				minimize(i, j);
@@ -423,7 +424,7 @@ real Grid::get_residue()
 	real tmp = 0;
 	for (int i = 1; i < nt-1; ++i)
 	{
-		for (int j = 1; j < nr; ++j)
+		for (int j = 1; j < nr-1; ++j)
 		{
 			// tmp += abs(xi[i][j]-temp[i][j]) / r[j];
 			if(abs(xi[i][j]-temp[i][j]) > tmp)
