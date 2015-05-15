@@ -402,7 +402,7 @@ void Grid::apply_boundary_conditions()
 	{
 		xi[i][nr-1] = 1/r[nr-1]*cos(t[i]);
 		xi[i][0] = ( ( pow(k[0] + k[1], 2) * xi[i][1] - k[0]*k[0]*xi[i][2] ) / k[1] \
-			+ k[0] * ( k[0] + k[1] ) * cos(t[i]) 
+			+ k[0] * ( k[0] + k[1] ) * -cos(t[i]) 
 			) / ( k[1] + 2*k[0] );
 	}
 }
