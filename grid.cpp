@@ -175,12 +175,13 @@ void Grid::minimize(int i, int j)
 	int MAX_NR_ITER = 10;
 	int iter = 0;
 
+	real coeff[20];
 	// This need to be done only once prior to NR iterations
-	calc_coefficients(i, j);
+	calc_coefficients(i, j, coeff);
 	// real del = 0;
 	do
 	{
-		delta = get_delta(i, j);
+		delta = get_delta(i, j, coeff);
 		// if(j==1) printf("%g ", delta);
 		if(delta!=delta)
 		{
@@ -213,8 +214,19 @@ void Grid::minimize(int i, int j)
 	// printf("\n");
 }
 
-real Grid::get_delta(int i, int j)
+real Grid::get_delta(int i, int j, real coeff[20])
 {
+	real A[4], B[4], C[4], D[4], H[4];
+
+	for (int k = 0; k < 4; ++k)
+	{
+		A[k] = coeff[5*k];
+		B[k] = coeff[5*k+1];
+		C[k] = coeff[5*k+2];
+		D[k] = coeff[5*k+3];
+		H[k] = coeff[5*k+4];
+	}
+
 	real g = 0., g_ = 0.; 	// g = dJ/dXij
 	real t1, t2;	// Temp variables
 	real s=0.;
@@ -252,8 +264,9 @@ real Grid::get_T(int i, int j)
 	return ( pow(r1[j]*r1[j] + lambda2, 2) - 4*lambda2*r1[j]*r1[j]*pow(cos(t1[i]), 2) ) / pow(r1[j], 4);
 }
 
-void Grid::calc_coefficients(int i, int j)
+void Grid::calc_coefficients(int i, int j, real coeff[20])
 {
+	real A[4], B[4], C[4], D[4], H[4];
 	real kk, hh, rr, tt, T, x1, x2;
 
 	T = get_T(i, j); // T^2 not T
@@ -345,6 +358,15 @@ void Grid::calc_coefficients(int i, int j)
 		- .5 * ( rr*rr - 1 ) / ( rr*rr*rr ) * sin(tt) / hh
 		);
 	H[3] = rr*T*hh*kk;
+
+	for (int k = 0; k < 4; ++k)
+	{
+		coeff[5*k] = A[k];
+		coeff[5*k+1] = B[k];
+		coeff[5*k+2] = C[k];
+		coeff[5*k+3] = D[k];
+		coeff[5*k+4] = H[k];
+	}
 
 }
 
