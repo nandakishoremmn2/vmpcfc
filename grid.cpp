@@ -140,9 +140,34 @@ void Grid::sweep(int n)
 	for (int num = 0; num < n; ++num)
 	{
 		apply_boundary_conditions();
-		for (int i = 1; i < nt-1; ++i)
+		// Red black blue green
+		for (int i = 1; i < nt-1; i+=2)
 		{
-			for (int j = 1; j < nr-1; ++j)
+			for (int j = 1; j < nr-1; j+=2)
+			{
+				temp[i][j] = xi[i][j];
+				minimize(i, j);
+			}
+		}
+		for (int i = 2; i < nt-1; i+=2)
+		{
+			for (int j = 1; j < nr-1; j+=2)
+			{
+				temp[i][j] = xi[i][j];
+				minimize(i, j);
+			}
+		}
+		for (int i = 1; i < nt-1; i+=2)
+		{
+			for (int j = 2; j < nr-1; j+=2)
+			{
+				temp[i][j] = xi[i][j];
+				minimize(i, j);
+			}
+		}
+		for (int i = 2; i < nt-1; i+=2)
+		{
+			for (int j = 2; j < nr-1; j+=2)
 			{
 				temp[i][j] = xi[i][j];
 				minimize(i, j);
