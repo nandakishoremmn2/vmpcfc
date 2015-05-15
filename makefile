@@ -7,5 +7,8 @@ OBJ = $(SRC:.cpp = .o)
 all: $(OBJ)
 	$(CC) $(CFLAGS) -o pcf_solver $(OBJ)
 
+openmp: $(OBJ)
+	$(CC) $(CFLAGS) $(OPENMPFLAGS) -o pcf_solver_omp $(OBJ)
+
 clean:
 	rm -f core *.o a.out nohup.out

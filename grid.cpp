@@ -141,6 +141,7 @@ void Grid::sweep(int n)
 	{
 		apply_boundary_conditions();
 		// Red black blue green
+		#pragma omp parallel for
 		for (int i = 1; i < nt-1; i+=2)
 		{
 			for (int j = 1; j < nr-1; j+=2)
@@ -149,6 +150,7 @@ void Grid::sweep(int n)
 				minimize(i, j);
 			}
 		}
+		#pragma omp parallel for
 		for (int i = 2; i < nt-1; i+=2)
 		{
 			for (int j = 1; j < nr-1; j+=2)
@@ -157,6 +159,7 @@ void Grid::sweep(int n)
 				minimize(i, j);
 			}
 		}
+		#pragma omp parallel for
 		for (int i = 1; i < nt-1; i+=2)
 		{
 			for (int j = 2; j < nr-1; j+=2)
@@ -165,6 +168,7 @@ void Grid::sweep(int n)
 				minimize(i, j);
 			}
 		}
+		#pragma omp parallel for
 		for (int i = 2; i < nt-1; i+=2)
 		{
 			for (int j = 2; j < nr-1; j+=2)
@@ -408,6 +412,7 @@ real abs(real num)
 real Grid::get_residue()
 {
 	real tmp = 0;
+	#pragma omp parallel for reduction (max:tmp)
 	for (int i = 1; i < nt-1; ++i)
 	{
 		for (int j = 1; j < nr-1; ++j)

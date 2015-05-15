@@ -13,7 +13,7 @@ void signalHandler( int signum );
 
 int main(int argc, char const *argv[])
 {
-	MultigridSolver solver(.39, 1.4, 1, 6, 4, 5, 3, 30, 1e-5, 1e-4);
+	MultigridSolver solver(.39, 1.4, 1, 6, 5, 4, 3, 30, 1e-5, 1e-4);
 	// grid_ptr = &grid;
 
 	// signal(SIGINT, signalHandler);
