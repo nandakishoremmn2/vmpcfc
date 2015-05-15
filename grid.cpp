@@ -105,17 +105,6 @@ void Grid::save(char *filename)
 	}
 	outfile.close();
 
-	std::ofstream outfile2("err.dat");
-	for (int i = 0; i < nt; ++i)
-	{
-		for (int j = 0; j < nr; ++j)
-		{
-			outfile2<<int(err[i][j])<<" ";
-		}
-		outfile2<<"\n";
-	}
-	outfile.close();
-
 	std::ofstream coordsfile("coords.dat");
 	for (int i = 0; i < nt; ++i)
 	{
@@ -152,19 +141,14 @@ void Grid::sweep(int n)
 	{
 		apply_boundary_conditions();
 		for (int i = 1; i < nt-1; ++i)
-		// for (int i = 1; i < (nt-1)/2; ++i)
 		{
 			for (int j = 1; j < nr-1; ++j)
-			// for (int j = nr-1; j > 0; --j)
 			{
 				temp[i][j] = xi[i][j];
 				minimize(i, j);
-				// temp[nt-1-i][j] = xi[nt-1-i][j];
-				// minimize(nt-1-i, j);
 			}
 		}
 		res = get_residue();
-		// printf("%d. Residue = %g\n", num, res);
 		if( res < tol && num > 5)break;
 	}
 }
@@ -178,40 +162,20 @@ void Grid::minimize(int i, int j)
 	real coeff[20];
 	// This need to be done only once prior to NR iterations
 	calc_coefficients(i, j, coeff);
-	// real del = 0;
 	do
 	{
 		delta = get_delta(i, j, coeff);
-		// if(j==1) printf("%g ", delta);
 		if(delta!=delta)
 		{
-			// printf("#");
-			err[i][j]++;
+			// err[i][j]++;
 			break;
 		}
 		
 		xi[i][j] = xi[i][j] - delta;
-		// del += delta;
-
-		// if(xi[i][j]!=xi[i][j]) // Check for NaN
-		// {
-		// 	// printf("*");
-		// 	// printf("Reset at (%d, %d)\n", i, j);
-		// 	xi[i][j] = -5;
-		// 	// xi[i][j] = cos(t[i])/r[j];
-		// 	// xi[i-1][j-1] = xi[i-1][j] = xi[i-1][j+1] = xi[i][j+1] = \
-		// 	// xi[i+1][j+1] = xi[i+1][j] = xi[i+1][j-1] = xi[i][j-1] = -10;
-		// 	break;
-		// }
 
 		iter++;
 
 	} while (abs(delta) > NRtol || iter < MAX_NR_ITER);
-	// printf(",%g, %g \n", del, abs(temp[i][j]-xi[i][j]) );
-	// if(iter==MAX_NR_ITER)printf(".\n");
-	// printf("iterations = %d\n", iter);
-	// printf("%f %d %d", xi[i][j], i, j);
-	// printf("\n");
 }
 
 real Grid::get_delta(int i, int j, real coeff[20])
@@ -231,31 +195,14 @@ real Grid::get_delta(int i, int j, real coeff[20])
 	real t1, t2;	// Temp variables
 	real s=0.;
 
-	// if(j<10)printf("j = %d. ", j);
 	for (int k = 0; k < 4; ++k)
 	{
 		t1 = ( A[k] * xi[i][j] + B[k] ) * xi[i][j] + C[k];
-		// t1 being negaative is an issue
-		// t1 = t1 > 0 ? t1 : -t1;
 		t2 = 2. * A[k] * xi[i][j] + B[k];
-		// printf(" | %d .. %g, %g, %g ", k, t2*(2*A[k]*xi[i][j]+B[k]), D[k], H[k]*(t2*(2*A[k]*xi[i][j]+B[k]) + D[k]));
-		// printf(" | %d .. %g ", k, D[k]);
-		// if(j<10)printf(" | %d .. %g, %g", k, alpha*pow(t1, alpha-1), t2);
-		// if(j<10)printf(" \n %d .. %g, %g, %g, %g, %g", k, alpha*pow(t1, alpha-1)*t2, D[k], H[k], alpha*pow(t1, alpha-1)*t2 + D[k], H[k]*(alpha*pow(t1, alpha-1)*t2 + D[k]) );
-		// s += H[k]*(alpha*pow(t1, alpha-1)*t2 + D[k]);
-		// printf(" | %d .. %g ", k, 2*A[k]*xi[i][j]+B[k]);
-		// printf(" | %d .. %g ", k, H[k]*(alpha * pow(t1, alpha-1)*t2+D[k]));
-		// s+=( alpha * pow(t1, alpha-1) * t2 + D[k] ) * H[k];
 
-		// g += H[k] * ( alpha * pow(t1, alpha-1) + D[k] );
 		g += ( alpha * pow(t1, alpha-1) * t2 + D[k] ) * H[k];
-		// printf(" | %d .. %g ", k, g);
 		g_ += ( 2 * A[k] * alpha * pow(t1, alpha - 1) + alpha * (alpha-1) * pow(t1, alpha-2) * t2 ) * H[k];
-	// 	printf("for -- %g ", ( alpha * pow(t1, alpha-1) * t2 + D[k] ) * H[k] );
-	// printf("i=%d, j=%d, k=%d, A=%g, B=%g, C=%g, D=%g, H=%g, g=%g, g_=%g, g/g_=%g ---- ", i, j, k, A[k], B[k], C[k], D[k], H[k], g, g_, g/g_ );
 	}
-	// if(j<10)printf(" ---> g/g_ = %g  ..--..", s);
-	// if(j<10)printf("\n");
 	return g/g_;
 }
 
@@ -278,7 +225,6 @@ void Grid::calc_coefficients(int i, int j, real coeff[20])
 	x2 = xi[i+1][j] + xi[i+1][j+1] - xi[i][j+1];
 
 	A[0] = -.5 * (gamma-1) * M_inf2 / T * ( 1/(kk*kk) + 1/(rr*rr*hh*hh) ) / 4;
-	// printf("----%g-----\n", A[0]);
 	B[0] = .5 * (gamma-1) * M_inf2 / T * ( cos(tt)/kk - sin(tt)/(rr*hh) 
 		+ x1 / (2*kk*kk) + x2 / (2*hh*hh*rr*rr) 
 		);
@@ -441,7 +387,6 @@ real Grid::get_residue()
 	{
 		for (int j = 1; j < nr-1; ++j)
 		{
-			// tmp += abs(xi[i][j]-temp[i][j]) / r[j];
 			if(abs(xi[i][j]-temp[i][j]) > tmp)
 			{
 				tmp = abs(xi[i][j]-temp[i][j]);
